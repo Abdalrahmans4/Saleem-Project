@@ -6,11 +6,11 @@ using System.Collections;
 public class QuizController : MonoBehaviour
 {
     [Header("TESTING MODE")]
-    public bool testSequenceMode = true; // Set to TRUE to play Level 1 -> 2 -> 3 automatically
+    public bool testSequenceMode = true;
 
     [Header("Level 1 Configuration")]
-    public GameObject level1Parent;      // The parent holding Q1-Q5 for Level 1
-    public GameObject[] level1Questions; // Drag Q1Panel, Q2Panel... here
+    public GameObject level1Parent;
+    public GameObject[] level1Questions;
 
     [Header("Level 2 Configuration")]
     public GameObject level2Parent;
@@ -21,15 +21,18 @@ public class QuizController : MonoBehaviour
     public GameObject[] level3Questions;
 
     [Header("Feedback Images")]
-    public GameObject correctImage; // The Green Checkmark Image
-    public GameObject wrongImage;   // The Red X Image
+    public GameObject correctImage;
+    public GameObject wrongImage;
 
-    private GameObject[] currentQuestionSet; // This will hold the active list
+    [Header("Rules")]
+    public int maxWrongAnswers = 3; // If you get 3 or more wrong, you fail (but only after finishing)
+
+    private GameObject[] currentQuestionSet;
     private int questionIndex = 0;
     private int score = 0;
-    private bool isProcessing = false; // Prevents double clicking
+    private int wrongAnswers = 0;
+    private bool isProcessing = false;
 
-    // Track which level is currently active so we know what comes next
     private int currentLevelID = 1;
 
     void Start()
@@ -38,24 +41,22 @@ public class QuizController : MonoBehaviour
 
         if (testSequenceMode)
         {
-            // Force start at Level 1 for testing
             levelToLoad = 1;
         }
         else
         {
-            // Load normally based on game progress
             levelToLoad = PlayerPrefs.GetInt("QuizToLoad", 1);
         }
 
         StartQuizLevel(levelToLoad);
     }
 
-    // New helper function to setup the level cleanly
     void StartQuizLevel(int levelID)
     {
         currentLevelID = levelID;
         questionIndex = 0;
-        score = 0; // Reset score for the new level
+        score = 0;
+        wrongAnswers = 0; // Reset mistakes
 
         // 1. Reset all parents first
         level1Parent.SetActive(false);
@@ -79,7 +80,6 @@ public class QuizController : MonoBehaviour
             currentQuestionSet = level3Questions;
         }
 
-        // 3. Setup the first question
         correctImage.SetActive(false);
         wrongImage.SetActive(false);
 
@@ -88,10 +88,10 @@ public class QuizController : MonoBehaviour
 
     void ShowQuestion(int index)
     {
-        // Hide all panels in the current set
+        // Hide all previous panels
         foreach (GameObject p in currentQuestionSet) p.SetActive(false);
 
-        // Show only the requested index
+        // Check if we still have questions left
         if (index < currentQuestionSet.Length)
         {
             currentQuestionSet[index].SetActive(true);
@@ -99,7 +99,18 @@ public class QuizController : MonoBehaviour
         }
         else
         {
-            FinishQuiz();
+            // --- UPDATED LOGIC ---
+            // We finished all questions. NOW we check if we won or lost.
+            if (wrongAnswers >= maxWrongAnswers)
+            {
+                Debug.Log("Finished Quiz, but too many wrong answers. Failed.");
+                FinishQuiz(false); // Failed
+            }
+            else
+            {
+                Debug.Log("Finished Quiz successfully!");
+                FinishQuiz(true); // Passed
+            }
         }
     }
 
@@ -122,14 +133,17 @@ public class QuizController : MonoBehaviour
         }
         else
         {
+            wrongAnswers++;
             wrongImage.SetActive(true);
         }
 
-        yield return new WaitForSeconds(2f); // Reduced to 2 seconds for faster testing (change back to 5 later)
+        yield return new WaitForSeconds(2f);
 
         correctImage.SetActive(false);
         wrongImage.SetActive(false);
 
+        // --- UPDATED LOGIC ---
+        // Always go to the next question, never stop early!
         questionIndex++;
         ShowQuestion(questionIndex);
 
@@ -145,30 +159,59 @@ public class QuizController : MonoBehaviour
         }
     }
 
-    void FinishQuiz()
+    void FinishQuiz(bool isSuccess)
     {
-        Debug.Log("Quiz Level " + currentLevelID + " Finished! Score: " + score);
+        Debug.Log("Quiz Completed. Result: " + (isSuccess ? "Passed" : "Failed"));
 
-        // --- TESTING SEQUENCE LOGIC ---
         if (testSequenceMode)
         {
-            // If we just finished Level 1, go to Level 2
-            if (currentLevelID == 1)
+            if (isSuccess && currentLevelID < 3)
             {
-                Debug.Log("Testing Mode: Moving to Level 2...");
-                StartQuizLevel(2);
-                return;
+                StartQuizLevel(currentLevelID + 1);
             }
-            // If we just finished Level 2, go to Level 3
-            else if (currentLevelID == 2)
+            else
             {
-                Debug.Log("Testing Mode: Moving to Level 3...");
-                StartQuizLevel(3);
-                return;
+                Debug.Log("Test Sequence Ended or Failed.");
             }
+            return;
         }
 
-        // If we finished Level 3 (or testing mode is off), go back to Map
-        SceneManager.LoadScene("MapScreen");
+        // --- REAL GAMEPLAY RETURN LOGIC ---
+
+        string successKey = "";
+        string failKey = "";
+        int sceneToLoad = 0;
+
+        // Configure Keys based on Level
+        if (currentLevelID == 1)
+        {
+            successKey = "Level1Complete";
+            failKey = "Level1Failed";
+            sceneToLoad = 2; // Return to Play Ground Lvl1
+        }
+        else if (currentLevelID == 2)
+        {
+            successKey = "Level2Complete";
+            failKey = "Level2Failed";
+            sceneToLoad = 3; // Return to Class Room Lvl2
+        }
+        // Add Level 3 logic here if needed
+
+        // Save the result note
+        if (isSuccess)
+        {
+            PlayerPrefs.SetInt(successKey, 1);
+            PlayerPrefs.DeleteKey(failKey);
+        }
+        else
+        {
+            PlayerPrefs.SetInt(failKey, 1);
+            PlayerPrefs.DeleteKey(successKey);
+        }
+
+        PlayerPrefs.Save();
+
+        // Load the gameplay scene
+        SceneManager.LoadScene(sceneToLoad);
     }
 }
