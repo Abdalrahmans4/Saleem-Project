@@ -3,7 +3,32 @@ guid: 793687bbec9298d41b4fd0123b99fb94
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: tripo_mat_2defa072
+    second: {fileID: 2100000, guid: 916b0732867986a4ebbad3099256ebc7, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: cardsGame2_basecolor
+    second: {fileID: 2800000, guid: c6fa58b4edc3e724b8abd8995c1332f9, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: cardsGame2_metallic
+    second: {fileID: 2800000, guid: 123c539b3c5c6a14d99313f2d1903eb0, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: cardsGame2_normal
+    second: {fileID: 2800000, guid: 7e69a1079dd8f0b45b63309fc9c3c1c0, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: cardsGame2_roughness
+    second: {fileID: 2800000, guid: f496165afa9bec841b04fc6a7d4cddf7, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
