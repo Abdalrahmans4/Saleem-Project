@@ -3,7 +3,27 @@ guid: 75359ed7957047148b12e0ac09025826
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: stackOfPapers1_basecolor
+    second: {fileID: 2800000, guid: dc2430a24fc18a64fa181b5600a578cf, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: stackOfPapers1_metallic
+    second: {fileID: 2800000, guid: aab1874355268fd4a8777de323ac02a7, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: stackOfPapers1_normal
+    second: {fileID: 2800000, guid: c6d3e3e99f431d84198bb1cf0054c2c7, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: stackOfPapers1_roughness
+    second: {fileID: 2800000, guid: 6accc49173d47d14a8e0b8ca548cd941, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0

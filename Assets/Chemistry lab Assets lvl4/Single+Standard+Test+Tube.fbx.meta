@@ -3,7 +3,27 @@ guid: 0e8ffccbe57ec4641acef4a70f741722
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: SingleStandardTestTube_basecolor
+    second: {fileID: 2800000, guid: 703f0eafdb3594f44bf694fae95aa97a, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: SingleStandardTestTube_metallic
+    second: {fileID: 2800000, guid: cee3065d5d7e1df47b12b84eb2f4d3f9, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: SingleStandardTestTube_normal
+    second: {fileID: 2800000, guid: 1c95fac9c35cf3b48be7274b68c33b63, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: SingleStandardTestTube_roughness
+    second: {fileID: 2800000, guid: 7af2e262d1dfbb543bfa557bf8021322, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0

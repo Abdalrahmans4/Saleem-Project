@@ -3,7 +3,27 @@ guid: b1ab4d6ac61cb5847a05853cff51e6f0
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: chemicalreaction3dboard_basecolor
+    second: {fileID: 2800000, guid: 36845c8ef3c33a34db666e897932f68f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: chemicalreaction3dboard_metallic
+    second: {fileID: 2800000, guid: 01e1849289903e648b843ba38dc27c78, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: chemicalreaction3dboard_normal
+    second: {fileID: 2800000, guid: 1ced05bedb7c71947b43caa47cd1397b, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: chemicalreaction3dboard_roughness
+    second: {fileID: 2800000, guid: 2a7372a6f7696b94a9c461b780c7793d, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0

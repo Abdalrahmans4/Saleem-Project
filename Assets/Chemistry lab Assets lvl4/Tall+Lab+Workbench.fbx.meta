@@ -3,7 +3,27 @@ guid: 82b175dcac18abd418c704662e6be934
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: TallLabWorkbench_basecolor
+    second: {fileID: 2800000, guid: 249f141b0e110c1459b0b717ef23f137, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: TallLabWorkbench_metallic
+    second: {fileID: 2800000, guid: 99de1e6b78671ba4d952aca7c07916c9, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: TallLabWorkbench_normal
+    second: {fileID: 2800000, guid: f194eea6e068d6545af1ae05cb46dae3, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: TallLabWorkbench_roughness
+    second: {fileID: 2800000, guid: 17ec758eef8297f4c9b6d6789de8987f, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0

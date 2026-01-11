@@ -3,7 +3,27 @@ guid: 9f04d6f3137a3f044a20b89b90d8653c
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: TallLabStool_basecolor
+    second: {fileID: 2800000, guid: 4226b6dc9ff3e2a41afe861bcae6ff1b, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: TallLabStool_metallic
+    second: {fileID: 2800000, guid: 7f8947d785d17fb479561f9ad910dacf, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: TallLabStool_normal
+    second: {fileID: 2800000, guid: b1924e6aae588e048ad091441c693db6, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: TallLabStool_roughness
+    second: {fileID: 2800000, guid: 7eb58f0470d479340b8c17e62fa46384, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
