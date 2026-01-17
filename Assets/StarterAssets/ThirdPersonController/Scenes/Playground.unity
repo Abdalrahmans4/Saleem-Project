@@ -792,11 +792,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5551393221956104464, guid: b3a9e4f8199ccc0448a383229d610b31, type: 3}
+      propertyPath: m_Name
+      value: PlayerFollowCamera
+      objectReference: {fileID: 0}
     - target: {fileID: 8836901263508829969, guid: b3a9e4f8199ccc0448a383229d610b31, type: 3}
       propertyPath: m_Name
       value: Player Controller
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5551393221956104430, guid: b3a9e4f8199ccc0448a383229d610b31, type: 3}
+    - {fileID: 1830746925004547125, guid: b3a9e4f8199ccc0448a383229d610b31, type: 3}
+    - {fileID: 2460232294502069735, guid: b3a9e4f8199ccc0448a383229d610b31, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
