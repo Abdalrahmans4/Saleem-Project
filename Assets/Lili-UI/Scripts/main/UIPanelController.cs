@@ -4,20 +4,22 @@ using DG.Tweening;
 public class UIPanelController : MonoBehaviour
 {
     [Header("UI Slots")]
-    public CanvasGroup canvasGroup; 
-    public RectTransform windowTransform; // This will be your 'Popup_Frame01'
+    public CanvasGroup canvasGroup;
+    public RectTransform windowTransform;
 
     [Header("Animation Settings")]
     public float speed = 0.3f;
     public Ease openEase = Ease.OutBack;
     public Ease closeEase = Ease.InBack;
 
+    // 1. Store the active animations so we can stop them specifically
+    private Tween fadeTween;
+    private Tween scaleTween;
+
     void Awake()
     {
-        // 1. If you didn't drag the Canvas Group in, find it on this object
         if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
-        
-        // 2. Initial State
+
         if (canvasGroup != null) canvasGroup.alpha = 0;
         if (windowTransform != null) windowTransform.localScale = Vector3.zero;
 
@@ -27,34 +29,48 @@ public class UIPanelController : MonoBehaviour
     public void Open()
     {
         gameObject.SetActive(true);
-        
-        // Safety check to prevent errors
-        if (windowTransform == null) {
+
+        if (windowTransform == null)
+        {
             Debug.LogError("Drag the 'Popup_Frame01' into the Window Transform slot!");
             return;
         }
 
-        canvasGroup.DOKill();
-        windowTransform.DOKill(); 
-        
-        canvasGroup.DOFade(1, speed);
-        windowTransform.DOScale(Vector3.one, speed).SetEase(openEase);
-        
+        // 2. Kill only the specific previous animations
+        fadeTween?.Kill();
+        scaleTween?.Kill();
+
+        // 3. Assign new animations to the variables
+        fadeTween = canvasGroup.DOFade(1, speed);
+        scaleTween = windowTransform.DOScale(Vector3.one, speed).SetEase(openEase);
+
         canvasGroup.blocksRaycasts = true;
         canvasGroup.interactable = true;
     }
 
     public void Close()
     {
-        canvasGroup.DOKill();
-        windowTransform.DOKill();
+        // 4. Kill specific previous animations before closing
+        fadeTween?.Kill();
+        scaleTween?.Kill();
 
-        windowTransform.DOScale(Vector3.zero, speed).SetEase(closeEase);
-        canvasGroup.DOFade(0, speed).OnComplete(() => {
+        scaleTween = windowTransform.DOScale(Vector3.zero, speed).SetEase(closeEase);
+
+        fadeTween = canvasGroup.DOFade(0, speed).OnComplete(() =>
+        {
             gameObject.SetActive(false);
         });
 
         canvasGroup.blocksRaycasts = false;
         canvasGroup.interactable = false;
+    }
+
+    public void SendEmail()
+    {
+        string email = "Saleem@gmail.com";
+        string subject = "Feedback for saleem Game";
+        string body = "Hello, I have a suggestion...";
+
+        Application.OpenURL("mailto:" + email + "?subject=" + subject + "&body=" + body);
     }
 }

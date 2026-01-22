@@ -1,53 +1,56 @@
 using UnityEngine;
 using DG.Tweening;
 
-public class CustomDropdown : MonoBehaviour
+public class DropDown : MonoBehaviour
 {
     [Header("References")]
-    public RectTransform menuContainer; 
-    public CanvasGroup menuCanvasGroup; 
+    public RectTransform menuContainer;
+    public CanvasGroup menuCanvasGroup;
 
     [Header("Settings")]
     public float duration = 0.4f;
     public Ease openEase = Ease.OutBack;
 
-    private Vector2 openedPosition; // The position you set in Scene View
-    private Vector2 closedPosition; // The position behind the header
+    private Vector2 openedPosition;
+    private Vector2 closedPosition;
     private bool isOpen = false;
+
+    // 1. Create variables to hold the active animations
+    private Tween moveTween;
+    private Tween fadeTween;
 
     void Awake()
     {
-        // 1. Remember exactly where you placed it in the Scene View!
         openedPosition = menuContainer.anchoredPosition;
+        closedPosition = new Vector2(openedPosition.x, 0);
 
-        // 2. Calculate the 'Closed' position (centered on the header)
-        closedPosition = new Vector2(openedPosition.x, 0); 
-
-        // 3. Start hidden
         menuContainer.anchoredPosition = closedPosition;
         menuCanvasGroup.alpha = 0;
         menuCanvasGroup.blocksRaycasts = false;
-        gameObject.SetActive(true); 
+        gameObject.SetActive(true);
     }
 
     public void ToggleMenu()
     {
         isOpen = !isOpen;
-        menuContainer.DOKill();
-        menuCanvasGroup.DOKill();
+
+        // 2. Kill ONLY the specific tweens if they are currently running
+        moveTween?.Kill();
+        fadeTween?.Kill();
 
         if (isOpen)
         {
-            // Move to the exact spot from Scene View
-            menuContainer.DOAnchorPos(openedPosition, duration).SetEase(openEase);
-            menuCanvasGroup.DOFade(1, duration);
+            // 3. Assign the new animation to the variable so we can control it later
+            moveTween = menuContainer.DOAnchorPos(openedPosition, duration).SetEase(openEase);
+            fadeTween = menuCanvasGroup.DOFade(1, duration);
+
             menuCanvasGroup.blocksRaycasts = true;
         }
         else
         {
-            // Slide back behind the header
-            menuContainer.DOAnchorPos(closedPosition, duration).SetEase(Ease.InQuad);
-            menuCanvasGroup.DOFade(0, duration);
+            moveTween = menuContainer.DOAnchorPos(closedPosition, duration).SetEase(Ease.InQuad);
+            fadeTween = menuCanvasGroup.DOFade(0, duration);
+
             menuCanvasGroup.blocksRaycasts = false;
         }
     }
