@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - CinemachineTarget
   layers:
   - Default
   - TransparentFX
@@ -43,6 +44,9 @@ TagManager:
     locked: 0
   - name: Foreground
     uniqueID: 2974716283
+    locked: 0
+  - name: New Layer 1
+    uniqueID: 3677690443
     locked: 0
   m_RenderingLayers:
   - Default
