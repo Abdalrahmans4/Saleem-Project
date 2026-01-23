@@ -6,27 +6,47 @@ public class openingDoor : MonoBehaviour
     [Header("Motion Settings")]
     public float openAngle = 90f;
     public float speed = 4f;
+    public float autoCloseDelay = 5f; // New setting for the timer
 
     private bool isOpen = false;
-    private bool isPlayerInRange = false; // Tracks if we are inside the box
+    private bool isPlayerInRange = false;
 
     private Quaternion closedRot;
     private Quaternion openRot;
 
+    // We need this to keep track of the timer so we can cancel it if needed
+    private Coroutine closeTimerCoroutine;
+
     void Start()
     {
-        // Record the starting rotation
         closedRot = transform.rotation;
-        // CHANGED: Added a minus sign (-) before openAngle to flip direction
         openRot = Quaternion.Euler(transform.eulerAngles + new Vector3(0, -openAngle, 0));
     }
 
     void Update()
     {
-        // 1. Check Input (Only works if the boolean flag is true)
+        // 1. Check Input
         if (isPlayerInRange && Input.GetKeyDown(KeyCode.E))
         {
+            // Toggle the state
             isOpen = !isOpen;
+
+            // === NEW TIMER LOGIC ===
+            if (isOpen)
+            {
+                // If we just opened the door, start the countdown
+                // First, stop any old timers to be safe
+                if (closeTimerCoroutine != null) StopCoroutine(closeTimerCoroutine);
+
+                // Start the new timer
+                closeTimerCoroutine = StartCoroutine(AutoCloseRoutine());
+            }
+            else
+            {
+                // If we just closed the door MANUALLY, cancel the timer
+                // (so it doesn't try to close it again later)
+                if (closeTimerCoroutine != null) StopCoroutine(closeTimerCoroutine);
+            }
         }
 
         // 2. Rotate the Door
@@ -34,25 +54,33 @@ public class openingDoor : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, target, Time.deltaTime * speed);
     }
 
-    // === NEW PHYSICS LOGIC ===
+    // === NEW COROUTINE ===
+    IEnumerator AutoCloseRoutine()
+    {
+        // Wait for 5 seconds
+        yield return new WaitForSeconds(autoCloseDelay);
 
-    // Called automatically when the Player walks into the invisible box
+        // If the door is still open, close it
+        if (isOpen)
+        {
+            isOpen = false;
+            Debug.Log("Door closed automatically.");
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
             isPlayerInRange = true;
-            Debug.Log("Player entered Door Zone");
         }
     }
 
-    // Called automatically when the Player walks out
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
         {
             isPlayerInRange = false;
-            Debug.Log("Player left Door Zone");
         }
     }
 }
