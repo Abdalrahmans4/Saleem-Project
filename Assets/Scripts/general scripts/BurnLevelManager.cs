@@ -3,49 +3,61 @@ using UnityEngine.UI;
 using UnityEngine.Playables;
 using TMPro;
 using System.Collections;
-using Unity.Cinemachine; // If using Cinemachine, otherwise use standard Camera
 
 public class BurnLevelManager : MonoBehaviour
 {
-    [Header("--- 1. REFERENCES ---")]
-    public GameObject saleemPlayer;         // Your FPS Player Controller object
-    public Camera mainPlayerCam;            // The camera usually used for walking
-    public Camera treatmentCam;             // The static camera for the mini-game
-    public GameObject spinningTriggerObj;   // The shiny object you find in the air
+    [Header("--- 1. SCENE REFS ---")]
+    public GameObject saleemPlayer;
+    public Camera mainPlayerCam;
+    public Camera treatmentCam;
+    public GameObject spinningTriggerObj;
 
-    [Header("--- 2. CUTSCENE & VISUALS ---")]
+    [Header("--- 2. MEDICAL ASSETS ---")]
     public PlayableDirector cutsceneDirector;
-    public Renderer armRenderer;            // The mesh of the injured arm
-    public Texture burnedTexture;           // Initial burn texture
-    public Texture bandagedTexture;         // Final bandaged texture
+    public Renderer armRenderer;
+    public Texture burnedTexture;
+    public Texture bandagedTexture;
 
-    [Header("--- 3. TREATMENT AUDIO ---")]
-    public AudioSource audioSource;         // Attach an AudioSource to this Manager
-    public AudioClip sfxCorrectPing;        // "Ding" sound
-    public AudioClip sfxWrongBong;          // "Bong" sound
-    public AudioClip sfxNurseHurry;         // "Hurry up" dramatic music (optional)
+    [Header("--- 3. AUDIO ---")]
+    public AudioSource audioSource;
+    public AudioClip sfxCorrectPing;
+    public AudioClip sfxWrongBong;
+    public AudioClip sfxNurseHurry;
 
-    [Header("--- 4. UI PANELS ---")]
-    public GameObject treatmentUIPanel;     // The UI with instructions/tools
-    public Image bloodOverlay;              // A red UI Image that flashes on mistake
-    public TextMeshProUGUI instructionsText; // "Step 1: Clean..."
-    public TextMeshProUGUI timerText;       // "Time: 15"
-    public GameObject winScreen;            // 3 Stars Win Screen
-    public GameObject loseScreen;           // Game Over Screen
-    public GameObject[] starsImages;        // Array of 3 Star Images (UI)
+    [Header("--- 4. UI: INSTRUCTIONS ---")]
+    // Drag 'Instructions Cafeteria' here
+    public GameObject instructionPanel;
+    // Drag the 'instruction' text object (inside popup/content) here
+    public TextMeshProUGUI instructionText;
 
-    [Header("--- 5. NURSE MISSION ---")]
-    public GameObject nurseNPC;             // The nurse object
+    [Header("--- 5. UI: STRIKES (Mistakes) ---")]
+    // Drag 'strike Cafeteria' here
+    public GameObject strikePanel;
+    // Drag 'Mistake text' (inside header) here
+    public TextMeshProUGUI mistakeHeaderText;
+    // Drag '1st strike', '2nd strike', '3rd strike' here
+    public GameObject[] strikeCrosses;
+
+    [Header("--- 6. UI: END GAME ---")]
+    // Drag 'Win screen Cafeteria' here
+    public GameObject winScreenPanel;
+    // Drag 'Star L', 'Star M', 'Star R' here
+    public GameObject[] winStars;
+    // Drag 'Fail screen Cafeteria' here
+    public GameObject loseScreenPanel;
+
+    [Header("--- 7. NURSE MISSION ---")]
+    public GameObject nurseNPC;
     public Transform finalDestination;      // The empty object near the injured kid
-    public float missionTime = 15f;         // 15 seconds
+    public float missionTime = 15f;
 
     // INTERNAL STATE
-    private int currentStep = 0; // 0=Clean, 1=Medicate, 2=Bandage
+    private int currentStep = 0;
     private int mistakes = 0;
     private bool isTreating = false;
     private bool isRunningForNurse = false;
     private float timerCount;
-    private int clicksOnWound = 0; // For the "Rubbing" check
+    private int clicksOnWound = 0;
     private NurseController nurseScript;
 
     void Start()
@@ -53,36 +65,31 @@ public class BurnLevelManager : MonoBehaviour
         // Setup Start State
         mainPlayerCam.gameObject.SetActive(true);
         treatmentCam.gameObject.SetActive(false);
-        treatmentUIPanel.SetActive(false);
-        bloodOverlay.gameObject.SetActive(false);
-        if (winScreen) winScreen.SetActive(false);
-        if (loseScreen) loseScreen.SetActive(false);
+
+        // Hide all custom UI panels at start
+        instructionPanel.SetActive(false);
+        strikePanel.SetActive(false);
+        winScreenPanel.SetActive(false);
+        loseScreenPanel.SetActive(false);
 
         // Reset Arm
         if (armRenderer) armRenderer.material.mainTexture = burnedTexture;
 
-        // Spinning Object Logic (Simple Rotation)
-        StartCoroutine(SpinTriggerRoutine());
+        // Setup Nurse
+        if (nurseNPC) nurseScript = nurseNPC.GetComponent<NurseController>();
 
-        nurseScript = nurseNPC.GetComponent<NurseController>();
+        // Spin Trigger
+        if (spinningTriggerObj) StartCoroutine(SpinTriggerRoutine());
     }
 
     void Update()
     {
-        // === TRIGGER START ===
-        // We check this in Update, or you can use OnTriggerEnter on the Player script.
-        // For simplicity, let's assume the player presses E when near the trigger.
-        if (!isTreating && !isRunningForNurse && Input.GetKeyDown(KeyCode.E))
-        {
-            // Raycast or distance check to spinningTriggerObj would go here
-            // For now, let's assume this function is called by the Trigger script below
-        }
-
         // === TIMER LOGIC (NURSE PHASE) ===
         if (isRunningForNurse)
         {
             timerCount -= Time.deltaTime;
-            timerText.text = "Time: " + Mathf.Ceil(timerCount).ToString();
+            // Update the instruction text to show the timer
+            instructionText.text = "HURRY! Find the Nurse!\nTime: " + Mathf.Ceil(timerCount).ToString();
 
             if (timerCount <= 0)
             {
@@ -94,13 +101,13 @@ public class BurnLevelManager : MonoBehaviour
     // Called by the Trigger Object
     public void StartMiniGameSequence()
     {
-        spinningTriggerObj.SetActive(false); // Hide the trigger
+        spinningTriggerObj.SetActive(false);
         StartCoroutine(CutsceneRoutine());
     }
 
     IEnumerator SpinTriggerRoutine()
     {
-        while (spinningTriggerObj.activeSelf)
+        while (spinningTriggerObj != null && spinningTriggerObj.activeSelf)
         {
             spinningTriggerObj.transform.Rotate(0, 50 * Time.deltaTime, 0);
             yield return null;
@@ -109,19 +116,15 @@ public class BurnLevelManager : MonoBehaviour
 
     IEnumerator CutsceneRoutine()
     {
-        // 1. Disable Player Control
-        // saleemPlayer.GetComponent<PlayerController>().enabled = false; // Disable your movement script
-        Cursor.lockState = CursorLockMode.None; // Unlock mouse 
+        Cursor.lockState = CursorLockMode.None;
         Cursor.visible = false;
 
-        // 2. Play Cutscene
         if (cutsceneDirector != null)
         {
             cutsceneDirector.Play();
             yield return new WaitForSeconds((float)cutsceneDirector.duration);
         }
 
-        // 3. Switch to Treatment Mode
         StartTreatment();
     }
 
@@ -130,18 +133,22 @@ public class BurnLevelManager : MonoBehaviour
         isTreating = true;
         mainPlayerCam.gameObject.SetActive(false);
         treatmentCam.gameObject.SetActive(true);
-        treatmentUIPanel.SetActive(true);
+
+        // Show Instructions Panel
+        instructionPanel.SetActive(true);
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
 
-        instructionsText.text = "Step 1: Clean and Cool (OxyWater)";
+        UpdateInstructionText("Step 1:\nClean and Cool the wound using OxyWater");
+
         currentStep = 0;
         mistakes = 0;
         clicksOnWound = 0;
-    }
 
-    // === MINI-GAME LOGIC ===
+        // Reset Strikes UI (Hide all Xs)
+        foreach (var cross in strikeCrosses) cross.SetActive(false);
+    }
 
     public void OnToolUsed(string toolName)
     {
@@ -154,10 +161,9 @@ public class BurnLevelManager : MonoBehaviour
         else if (currentStep == 1 && toolName == "BurnCream") stepSuccess = true;
         else if (currentStep == 2 && toolName == "BandAidRoll") stepSuccess = true;
 
-        // TRAP CHECK
         if (toolName == "Alcohol")
         {
-            RegisterMistake("ALCOHOL IS BAD!");
+            RegisterMistake("Do not use Alcohol!");
             return;
         }
 
@@ -166,8 +172,8 @@ public class BurnLevelManager : MonoBehaviour
             audioSource.PlayOneShot(sfxCorrectPing);
             currentStep++;
 
-            if (currentStep == 1) instructionsText.text = "Step 2: Medicate (BurnCream)";
-            if (currentStep == 2) instructionsText.text = "Step 3: Protect (Bandage)";
+            if (currentStep == 1) UpdateInstructionText("Step 2:\nApply BurnCream to soothe the skin");
+            if (currentStep == 2) UpdateInstructionText("Step 3:\nProtect the wound with a Bandage");
             if (currentStep == 3) FinishTreatment();
         }
         else
@@ -176,7 +182,6 @@ public class BurnLevelManager : MonoBehaviour
         }
     }
 
-    // Called when clicking the WOUND directly
     public void OnWoundClicked()
     {
         if (!isTreating) return;
@@ -184,19 +189,29 @@ public class BurnLevelManager : MonoBehaviour
         clicksOnWound++;
         if (clicksOnWound > 3)
         {
-            RegisterMistake("Don't Rub the Wound!");
-            clicksOnWound = 0; // Reset so they don't get spammed instantly
+            RegisterMistake("Don't touch the wound!");
+            clicksOnWound = 0;
         }
     }
 
     void RegisterMistake(string reason)
     {
         mistakes++;
-        Debug.Log("Mistake: " + reason);
-
-        // Feedback
         audioSource.PlayOneShot(sfxWrongBong);
-        StartCoroutine(ScreenShakeAndRedFlash());
+
+        // 1. Show the Strike Panel
+        strikePanel.SetActive(true);
+        mistakeHeaderText.text = reason; // Set the error text
+
+        // 2. Turn on the X mark (1st, 2nd, or 3rd)
+        if (mistakes <= strikeCrosses.Length)
+        {
+            strikeCrosses[mistakes - 1].SetActive(true);
+        }
+
+        // 3. Hide panel after 2 seconds
+        StopCoroutine("HideStrikePanel");
+        StartCoroutine("HideStrikePanel");
 
         if (mistakes >= 3)
         {
@@ -204,86 +219,64 @@ public class BurnLevelManager : MonoBehaviour
         }
     }
 
-    IEnumerator ScreenShakeAndRedFlash()
+    IEnumerator HideStrikePanel()
     {
-        // Flash Red
-        bloodOverlay.gameObject.SetActive(true);
+        yield return new WaitForSeconds(2f);
+        strikePanel.SetActive(false);
+    }
 
-        // Shake Camera
-        Vector3 originalPos = treatmentCam.transform.position;
-        float duration = 0.5f;
-        float elapsed = 0;
-
-        while (elapsed < duration)
-        {
-            float x = Random.Range(-0.1f, 0.1f);
-            float y = Random.Range(-0.1f, 0.1f);
-            treatmentCam.transform.position = originalPos + new Vector3(x, y, 0);
-
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        treatmentCam.transform.position = originalPos;
-        bloodOverlay.gameObject.SetActive(false);
+    void UpdateInstructionText(string message)
+    {
+        // Supports Arabic text if your font supports it
+        instructionText.text = message;
     }
 
     void FinishTreatment()
     {
         isTreating = false;
 
-        // Change Texture
         armRenderer.material.mainTexture = bandagedTexture;
         audioSource.PlayOneShot(sfxCorrectPing);
 
-        // Hide Treatment UI
-        treatmentUIPanel.SetActive(false);
+        instructionPanel.SetActive(false); // Hide instructions for a moment
 
-        // Start Phase 2: RUN!
         StartNurseRunPhase();
     }
-
-    // === NURSE RUN LOGIC ===
 
     void StartNurseRunPhase()
     {
         isRunningForNurse = true;
         timerCount = missionTime;
 
-        // Switch Camera Back
         treatmentCam.gameObject.SetActive(false);
         mainPlayerCam.gameObject.SetActive(true);
 
-        // Enable Movement
-        // saleemPlayer.GetComponent<PlayerController>().enabled = true; 
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 
-        instructionsText.gameObject.SetActive(true);
-        instructionsText.text = "FIND THE NURSE! (15s)";
+        // Show Instructions again for the timer
+        instructionPanel.SetActive(true);
 
         if (sfxNurseHurry) audioSource.PlayOneShot(sfxNurseHurry);
     }
 
-    // Called when Player presses E on Nurse
     public void NurseFound()
     {
         if (!isRunningForNurse) return;
-
-        instructionsText.text = "Bring her to the patient!";
         nurseScript.StartFollowing(saleemPlayer.transform);
     }
 
-    // Called when Nurse reaches the empty object trigger
     public void MissionComplete()
     {
         isRunningForNurse = false;
-        instructionsText.text = "";
+        instructionPanel.SetActive(false); // Hide instructions/timer
 
-        // Calculate Stars
-        int starsEarned = 3;
-        if (mistakes == 1) starsEarned = 2;
-        if (mistakes == 2) starsEarned = 1;
+        // Calculate Stars Logic
+        // 0 Mistakes = 3 Stars
+        // 1 Mistake = 2 Stars
+        // 2 Mistakes = 1 Star
+        int starsEarned = 3 - mistakes;
+        if (starsEarned < 0) starsEarned = 0;
 
         ShowWinScreen(starsEarned);
     }
@@ -293,13 +286,17 @@ public class BurnLevelManager : MonoBehaviour
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
 
-        winScreen.SetActive(true);
+        winScreenPanel.SetActive(true);
 
-        // Show correct star count
-        for (int i = 0; i < starsImages.Length; i++)
-        {
-            starsImages[i].SetActive(i < stars);
-        }
+        // Hide all stars first
+        foreach (var star in winStars) star.SetActive(false);
+
+        // Logic for your specific hierarchy (Star L, Star M, Star R)
+        // Assuming array order in Inspector is: Element 0 = Left, Element 1 = Middle, Element 2 = Right
+
+        if (stars >= 1) winStars[1].SetActive(true); // Middle Star (usually the first one needed)
+        if (stars >= 2) winStars[0].SetActive(true); // Left Star
+        if (stars >= 3) winStars[2].SetActive(true); // Right Star
     }
 
     void TriggerGameOver()
@@ -308,6 +305,10 @@ public class BurnLevelManager : MonoBehaviour
         isRunningForNurse = false;
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
-        loseScreen.SetActive(true);
+
+        instructionPanel.SetActive(false);
+        strikePanel.SetActive(false);
+
+        loseScreenPanel.SetActive(true);
     }
 }
