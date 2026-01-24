@@ -8,20 +8,35 @@ public class PuzzleManager : MonoBehaviour
     [Header("1. Setup")]
     public List<TilePiece> allTiles;
     public PlayableDirector cutsceneTimeline;
-    public GameObject saleemPlayer; // Reference to the player
+    public GameObject saleemPlayer;
 
     [Header("2. Settings")]
     public float shuffleSpeed = 0.2f;
     public float shuffleDuration = 8f;
+
+    [Header("3. Idle Effects (The New Stuff)")] // === NEW ===
+    public Light hoverLight;          // Drag a Point Light here
+    public float bobSpeed = 2f;       // How fast it goes up and down
+    public float bobHeight = 0.2f;    // How high it moves
+    public float lightPulseSpeed = 3f; // How fast the light glows in/out
 
     private bool isGameActive = false;
     private bool isPlayerInRange = false;
     private bool hasInteracted = false;
 
     private TilePiece[,] grid = new TilePiece[3, 3];
+    private Vector3 originalPosition; // === NEW: To remember where it started
+    private float defaultLightIntensity; // === NEW: To remember light brightness
 
     void Start()
     {
+        // === NEW: Save original position so we can bob relative to it
+        originalPosition = transform.position;
+
+        // === NEW: Setup Light
+        if (hoverLight != null)
+            defaultLightIntensity = hoverLight.intensity;
+
         // 1. Setup Grid & Target Positions
         int index = 0;
         for (int y = 2; y >= 0; y--)
@@ -41,6 +56,13 @@ public class PuzzleManager : MonoBehaviour
 
     void Update()
     {
+        // === NEW: Idle Animation Logic ===
+        // Only do this if the player hasn't touched the puzzle yet
+        if (!hasInteracted)
+        {
+            HandleIdleEffects();
+        }
+
         // === TRIGGER START ===
         if (isPlayerInRange && !hasInteracted && Input.GetKeyDown(KeyCode.E))
         {
@@ -48,8 +70,6 @@ public class PuzzleManager : MonoBehaviour
         }
 
         // === THE FIX: FORCE MOUSE VISIBILITY ===
-        // If the puzzle is active, we force the cursor to be free every single frame.
-        // This overrides your FPS controller trying to lock it.
         if (isGameActive)
         {
             Cursor.lockState = CursorLockMode.None;
@@ -57,9 +77,33 @@ public class PuzzleManager : MonoBehaviour
         }
     }
 
+    // === NEW FUNCTION: Handles the floating and glowing ===
+    void HandleIdleEffects()
+    {
+        // 1. Bob Up and Down
+        // We take the original Y and add a Sine wave to it
+        float newY = originalPosition.y + Mathf.Sin(Time.time * bobSpeed) * bobHeight;
+        transform.position = new Vector3(originalPosition.x, newY, originalPosition.z);
+
+        // 2. Pulse the Light (Make it shiny!)
+        if (hoverLight != null)
+        {
+            // PingPong moves a value back and forth
+            float pulse = Mathf.PingPong(Time.time * lightPulseSpeed, 1f);
+            hoverLight.intensity = defaultLightIntensity + pulse; // Add pulse to base intensity
+        }
+    }
+
     IEnumerator StartSequence()
     {
         hasInteracted = true;
+
+        // === NEW: Cleanup Effects ===
+        // 1. Snap back to exact position so tiles aren't floating weirdly
+        transform.position = originalPosition;
+
+        // 2. Turn off the "Look at me!" light
+        if (hoverLight != null) hoverLight.enabled = false;
 
         // 1. Start Cutscene
         if (cutsceneTimeline != null)
@@ -67,18 +111,15 @@ public class PuzzleManager : MonoBehaviour
             cutsceneTimeline.Play();
         }
 
-        // 2. Disable Player Movement (Optional but recommended)
-        // This prevents the player from walking away while solving the puzzle.
-        // If your player has a "CharacterController" or a script, disabling it here helps.
-        // For now, we rely on the Update() fix above.
-
         // 3. Shuffle (Wait for 8 seconds)
         yield return StartCoroutine(ShuffleRoutine());
 
         // 4. Game Start
-        isGameActive = true; // This triggers the logic in Update() to show the mouse
+        isGameActive = true;
         Debug.Log("Shuffle Done. Game Started!");
     }
+
+    // ... [The rest of your script (TryMoveTile, SwapTiles, ShuffleRoutine, Helpers) stays exactly the same] ...
 
     public void TryMoveTile(TilePiece clickedTile)
     {
@@ -128,7 +169,6 @@ public class PuzzleManager : MonoBehaviour
         }
     }
 
-    // --- Helpers ---
     Vector2Int GetGridPosition(TilePiece tile)
     {
         for (int x = 0; x < 3; x++)
@@ -163,9 +203,7 @@ public class PuzzleManager : MonoBehaviour
         if (correctCount == 9)
         {
             Debug.Log("YOU WIN!");
-            isGameActive = false; // This stops the Update() lock, so player returns to normal view
-
-            // Lock mouse again so player can look around
+            isGameActive = false;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
